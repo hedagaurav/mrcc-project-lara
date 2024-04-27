@@ -15,6 +15,7 @@
                                 <tr>
                                     <th>Task Name</th>
                                     <th>Task Hours</th>
+                                    <th>Project Name</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -23,6 +24,7 @@
                                     <tr>
                                         <td>{{ $task->task_name }}</td>
                                         <td>{{ $task->task_hours }}</td>
+                                        <td>{{ $task->project->project_name }}</td>
                                         <td>
                                             <a href="{{ route('task.show', $task->id) }}" class="btn btn-primary">View</a>
                                             <a href="{{ route('task.edit', $task->id) }}" class="btn btn-warning">Edit</a>

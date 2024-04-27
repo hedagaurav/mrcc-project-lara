@@ -34,6 +34,21 @@
                                 @enderror
                             </div>
 
+                            <div class="form-group">
+                                <label for="project_name">{{ __('Project Name') }}</label>
+                                <select name="project_name" id="project_name">
+                                    @foreach ($projects as $project)
+                                        <option value="{{ $project->id }}" {{ $task->project_id == $project->id ? 'selected' : ''}}>{{ $project->project_name }}</option>
+                                    @endforeach
+                                </select>
+                                {{-- <input id="task_hours" type="text" class="form-control @error('task_hours') is-invalid @enderror" name="task_hours" value="{{ old('task_hours', $task->task_hours) }}" required> --}}
+                                @error('task_hours')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+
                             <button type="submit" class="btn btn-primary">
                                 {{ __('Update') }}
                             </button>

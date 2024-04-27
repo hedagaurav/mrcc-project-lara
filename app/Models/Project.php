@@ -11,4 +11,9 @@ class Project extends Model
 
     protected $fillable = ['project_code', 'project_name'];
 
+    // Define the one-to-many relationship with Task
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
 }

@@ -14,7 +14,7 @@
         <li>Download the project.</li>
         <li>Open the project folder in the terminal/cmd and run command <b>composer install</b></li>
         <li>Create the database with name <b>mrcc-project-lara</b></li>
-        <li></li>
+        <li>Run command in terminal/cmd <b>php artisan key:generate</b></li>
         <li>Open the project folder in the terminal/cmd and run command <b>php artisan migrate</b></li>
         <li>Run command in terminal/cmd <b>php artisan serve</b></li>
     </ol>

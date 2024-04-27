@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProjectController extends Controller
 {
@@ -14,7 +15,7 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $projects = Project::all();
+        $projects = Project::with('tasks')->get();
         return view('project.index', compact('projects'));
     }
 
@@ -36,15 +37,24 @@ class ProjectController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'project_code' => 'required|unique:projects',
-            'project_name' => 'required',
-        ]);
+        try {
+            DB::beginTransaction();
 
-        Project::create($request->all());
+            $request->validate([
+                'project_code' => 'required|unique:projects',
+                'project_name' => 'required',
+            ]);
 
-        return redirect()->route('project.index')
-            ->with('success', 'Project created successfully.');
+            Project::create($request->all());
+
+            DB::commit();
+
+            return redirect()->route('projects.index')
+                ->with('success', 'Project created successfully.');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->back()->with('error', 'Failed to create project. Please try again.');
+        }
     }
 
     /**
@@ -53,9 +63,10 @@ class ProjectController extends Controller
      * @param  \App\Models\Project  $project
      * @return \Illuminate\Http\Response
      */
-    public function show(Project $project)
+    public function show(Project $project,$id)
     {
-        return view('project.show', compact('project'));
+        $project = Project::with('tasks')->find($id);
+        return view('projects.show', compact('project'));
     }
 
     /**
@@ -78,15 +89,24 @@ class ProjectController extends Controller
      */
     public function update(Request $request, Project $project)
     {
-        $request->validate([
-            'project_code' => 'required|unique:projects,project_code,' . $project->id,
-            'project_name' => 'required',
-        ]);
+        try {
+            DB::beginTransaction();
 
-        $project->update($request->all());
+            $request->validate([
+                'project_code' => 'required|unique:projects,project_code,' . $project->id,
+                'project_name' => 'required',
+            ]);
 
-        return redirect()->route('project.index')
-            ->with('success', 'Project updated successfully');
+            $project->update($request->all());
+
+            DB::commit();
+
+            return redirect()->route('projects.index')
+                ->with('success', 'Project updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->back()->with('error', 'Failed to update project. Please try again.');
+        }
     }
 
     /**

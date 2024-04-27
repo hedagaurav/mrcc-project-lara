@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TaskController extends Controller
 {
@@ -14,7 +16,7 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $tasks = Task::all();
+        $tasks = Task::with('project')->get();
         return view('task.index', compact('tasks'));
     }
 
@@ -36,15 +38,24 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'task_name' => 'required',
-            'task_hours' => 'required|numeric',
-        ]);
+        try {
+            DB::beginTransaction();
 
-        Task::create($request->all());
+            $request->validate([
+                'task_name' => 'required',
+                'task_hours' => 'required|numeric',
+            ]);
 
-        return redirect()->route('tasks.index')
-            ->with('success', 'Task created successfully.');
+            Task::create($request->all());
+
+            DB::commit();
+
+            return redirect()->route('tasks.index')
+                ->with('success', 'Task created successfully.');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->back()->with('error', 'Failed to create task. Please try again.');
+        }
     }
 
     /**
@@ -66,7 +77,9 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
-        return view('task.edit', compact('task'));
+        $task->load('project');
+        $projects = Project::all();
+        return view('task.edit', compact('task','projects'));
     }
 
     /**
@@ -78,15 +91,25 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
-        $request->validate([
-            'task_name' => 'required',
-            'task_hours' => 'required|numeric',
-        ]);
+        try {
+            DB::beginTransaction();
 
-        $task->update($request->all());
+            $request->validate([
+                'task_name' => 'required',
+                'task_hours' => 'required|numeric',
+                'project_id' => 'required|numeric',
+            ]);
 
-        return redirect()->route('tasks.index')
-            ->with('success', 'Task updated successfully.');
+            $task->update($request->all());
+
+            DB::commit();
+
+            return redirect()->route('tasks.index')
+                             ->with('success', 'Task updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->back()->with('error', 'Failed to update task. Please try again.');
+        }
     }
 
     /**
