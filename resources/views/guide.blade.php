@@ -9,4 +9,10 @@ Details –
 5.	Once the form is submitted, it should navigate to the list screen
 6.	There should be an option to filter the project based on name and code
 
+Project Code	Project Name
+123456	        Project 1	
+                Task 1 – 8 hours	
+                Task 2 – 4 hours	
+234567	        Project 2
+            	Task 1 – 2 hours	
 

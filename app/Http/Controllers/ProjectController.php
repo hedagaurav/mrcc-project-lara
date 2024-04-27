@@ -14,7 +14,8 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        //
+        $projects = Project::all();
+        return view('projects.index', compact('projects'));
     }
 
     /**
@@ -24,7 +25,7 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        //
+        return view('projects.create');
     }
 
     /**
@@ -35,7 +36,15 @@ class ProjectController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'project_code' => 'required|unique:projects',
+            'project_name' => 'required',
+        ]);
+
+        Project::create($request->all());
+
+        return redirect()->route('projects.index')
+            ->with('success', 'Project created successfully.');
     }
 
     /**
@@ -46,7 +55,7 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        //
+        return view('projects.show', compact('project'));
     }
 
     /**
@@ -57,7 +66,7 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
-        //
+        return view('projects.edit', compact('project'));
     }
 
     /**
@@ -69,7 +78,15 @@ class ProjectController extends Controller
      */
     public function update(Request $request, Project $project)
     {
-        //
+        $request->validate([
+            'project_code' => 'required|unique:projects,project_code,' . $project->id,
+            'project_name' => 'required',
+        ]);
+
+        $project->update($request->all());
+
+        return redirect()->route('projects.index')
+            ->with('success', 'Project updated successfully');
     }
 
     /**
@@ -80,6 +97,9 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
-        //
+        $project->delete();
+
+        return redirect()->route('projects.index')
+            ->with('success', 'Project deleted successfully.');
     }
 }
