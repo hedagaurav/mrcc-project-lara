@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class ProjectController extends Controller
 {
@@ -40,20 +42,47 @@ class ProjectController extends Controller
         try {
             DB::beginTransaction();
 
-            $request->validate([
+            $validate = Validator::make($request->all(), [
                 'project_code' => 'required|unique:projects',
                 'project_name' => 'required',
+                'task_name.*' => 'required',
+                'task_hours.*' => 'required|numeric',
             ]);
 
-            Project::create($request->all());
+            if ($validate->fails()) {
+                $errors = $validate->errors()->toArray();
+
+                return response()->json(['success' => false, 'errors' => $errors], 422);
+            }
+
+            $validated_data = $validate->safe()->all();
+            $project_formdata = [
+                'project_code' => $validated_data['project_code'],
+                'project_name' => $validated_data['project_name'],
+            ];
+
+            $project = Project::create($project_formdata);
+
+            $tasks_formdata = [];
+
+            foreach ($validated_data['task_name'] as $index => $data) {
+                $task_name = $validated_data['task_name'][$index];
+                $task_hours = $validated_data['task_hours'][$index];
+
+                $tasks_formdata[] = [
+                    'task_name' => isset($task_name) ? $task_name : '',
+                    'task_hours' => isset($task_hours) ? $task_hours : 0,
+                    'project_id' => $project->id
+                ];
+            }
+            $tasks = $project->tasks()->createMany($tasks_formdata);
 
             DB::commit();
 
-            return redirect()->route('projects.index')
-                ->with('success', 'Project created successfully.');
+            return response()->json(['success' => true, 'message' => 'Project created successfully', 'project' => $project, 'tasks' => $tasks]);
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Failed to create project. Please try again.');
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 
@@ -63,7 +92,7 @@ class ProjectController extends Controller
      * @param  \App\Models\Project  $project
      * @return \Illuminate\Http\Response
      */
-    public function show(Project $project,$id)
+    public function show(Project $project, $id)
     {
         $project = Project::with('tasks')->find($id);
         return view('projects.show', compact('project'));

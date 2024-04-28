@@ -20,7 +20,11 @@
         @yield('content')
     </main>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.repeater/1.2.1/jquery.repeater.min.js"></script>
     <!-- Include any JavaScript files here -->
     <script src="{{ asset('js/app.js') }}"></script>
+
+    @yield('footer-js')
 </body>
 </html>
