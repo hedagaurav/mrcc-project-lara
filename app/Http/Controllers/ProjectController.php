@@ -92,10 +92,10 @@ class ProjectController extends Controller
      * @param  \App\Models\Project  $project
      * @return \Illuminate\Http\Response
      */
-    public function show(Project $project, $id)
+    public function show(Project $project)
     {
-        $project = Project::with('tasks')->find($id);
-        return view('projects.show', compact('project'));
+        $project->load('tasks');
+        return view('project.show', compact('project'));
     }
 
     /**
@@ -106,7 +106,9 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
+        $project->load('tasks');
         return view('project.edit', compact('project'));
+        // return view('layouts.common_footer');
     }
 
     /**
@@ -119,22 +121,63 @@ class ProjectController extends Controller
     public function update(Request $request, Project $project)
     {
         try {
-            DB::beginTransaction();
-
-            $request->validate([
-                'project_code' => 'required|unique:projects,project_code,' . $project->id,
+            $validate = Validator::make($request->all(), [
+                // 'project_id' => 'integer',
+                'project_code' => 'required',
                 'project_name' => 'required',
+                // 'task_id.*' => 'integer',
+                'task_name.*' => 'required',
+                'task_hours.*' => 'required|numeric',
             ]);
 
-            $project->update($request->all());
+            if ($validate->fails()) {
+                $errors = $validate->errors()->toArray();
+
+                return response()->json(['success' => false, 'errors' => $errors], 422);
+            }
+
+            $validated_data = $validate->safe()->all();
+
+            $project_formdata = [
+                // 'id' => $validated_data['project_id'],
+                // 'project_code' => $validated_data['project_code'],
+                'project_name' => $validated_data['project_name'],
+            ];
+
+            $project_data = Project::where('project_code', $validated_data['project_code'])->first();
+            
+            if($project_data == null){
+                $project_formdata['project_code'] = $validated_data['project_code'];
+            }
+
+            $project->update($project_formdata);
+
+            /* delete old tasks related to poject and add new task to update
+                the task related to the project.
+            */
+
+            $project->tasks()->delete();
+
+            $tasks_formdata = [];
+
+            foreach ($validated_data['task_name'] as $index => $data) {
+                $task_name = $validated_data['task_name'][$index];
+                $task_hours = $validated_data['task_hours'][$index];
+
+                $tasks_formdata[] = [
+                    'task_name' => isset($task_name) ? $task_name : '',
+                    'task_hours' => isset($task_hours) ? $task_hours : 0,
+                    'project_id' => $project->id
+                ];
+            }
+            $tasks = $project->tasks()->createMany($tasks_formdata);
 
             DB::commit();
 
-            return redirect()->route('projects.index')
-                ->with('success', 'Project updated successfully.');
+            return response()->json(['success' => true, 'message' => 'Project created successfully', 'project' => $project, 'tasks' => $tasks]);
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Failed to update project. Please try again.');
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 

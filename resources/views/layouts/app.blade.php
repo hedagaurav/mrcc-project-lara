@@ -24,7 +24,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.repeater/1.2.1/jquery.repeater.min.js"></script>
     <!-- Include any JavaScript files here -->
     <script src="{{ asset('js/app.js') }}"></script>
+    
+    {{-- common footer  --}}
+    @include('layouts.common_footer')
+    @yield('common_footer')
+    
+    {{-- common footer  --}}
 
+    {{-- file footer --}}
     @yield('footer-js')
+    {{-- file footer --}}
+
 </body>
 </html>
