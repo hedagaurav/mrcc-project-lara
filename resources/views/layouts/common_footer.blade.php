@@ -16,11 +16,30 @@
         if (item.length > 1) {
             $(this).closest('.task-hours-item').remove();
         } else {
-            // console.log(item.length);
-            // console.log(item);
             // $('.task-hours-item').first().find('.delete-task').show();
         }
     });
+
+    $('#project-table-search').on('input',() => {
+        let search_value = $('#project-table-search').val();
+        let rows = $('#projects_table tr');
+        rows.each((index, row) => {
+            
+            let project_code = $(row).find('.project_code').text();
+            let project_name = $(row).find('.project_name').text();
+            // console.log(project_code.includes(search_value));
+            if($(row).is(":hidden")){
+                $(row).show();
+            }
+            if(project_code.includes(search_value) || project_name.includes(search_value)){
+                $(row).show();
+            }else{
+                $(row).hide();
+            }
+            // console.log(project_code);
+        });
+        // console.log(rows);
+    })
 
     
 </script>

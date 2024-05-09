@@ -10,7 +10,10 @@
                 <div class="card-header">{{ __('Projects') }}</div>
 
                 <div class="card-body">
-                    <table class="table">
+                    <label for="project-table-search">Search Table:</label>
+                    <input type="text" id="project-table-search" placeholder="Search...">
+
+                    <table class="table" id="projects_table">
                         <thead>
                             <tr>
                                 <th>Project Code</th>
@@ -21,8 +24,12 @@
                         <tbody>
                             @foreach($projects as $project)
                             <tr>
-                                <td>{{ $project->project_code }}</td>
-                                <td>{{ $project->project_name }}</td>
+                                <td class="project_code">{{ $project->project_code }}</td>
+                                <td ><span class="project_name">{{ $project->project_name }}</span>
+                                    @foreach ($project->tasks as $task)
+                                    <p>Task Name: {{ $task->task_name }} Task Hours: {{ $task->task_hours }} hours</p>
+                                    @endforeach
+                                </td>
                                 <td>
                                     <a href="{{ route('project.show', $project->id) }}" class="btn btn-primary">View</a>
                                     <a href="{{ route('project.edit', $project->id) }}" class="btn btn-warning">Edit</a>
@@ -33,14 +40,12 @@
                                     </form>
                                 </td>
                             </tr>
-                            <tr>
+                            {{-- <tr>
                                 <td></td>
                                 <td>
-                                    @foreach ($project->tasks as $task)
-                                    <p>Task Name: {{ $task->task_name }} Task Hours: {{ $task->task_hours }} hours</p>
-                                    @endforeach
+                                    
                                 </td>
-                            </tr>
+                            </tr> --}}
                             @endforeach
                         </tbody>
                     </table>
